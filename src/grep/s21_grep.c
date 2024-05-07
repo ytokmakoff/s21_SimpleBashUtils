@@ -22,7 +22,6 @@ void add_reg_from_file(arguments *arg, char *filepath) {
             line[read - 1] = '\0';
         }
         pattern_add(arg, line);
-        output_line(line, read);
     }
     free(line);
     fclose(f);
