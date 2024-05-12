@@ -66,7 +66,6 @@ arguments arguments_parser(int argc, char *argv[]) {
 
 void print_file(FILE *f, arguments *option) {
     int line_counter = 0;
-    int nonblank_line_counter = 0;
     int sflag = 0;
     int bflag = 0;
     int nflag = 0;
@@ -86,8 +85,8 @@ void print_file(FILE *f, arguments *option) {
         if (option->b == 1) {
             if (ch != '\n') {
                 if (bflag == 0) {
-                    nonblank_line_counter++;
-                    printf("%6d\t", nonblank_line_counter);
+                    line_counter++;
+                    printf("%6d\t", line_counter);
                     bflag = 1;
                 }
             } else {
