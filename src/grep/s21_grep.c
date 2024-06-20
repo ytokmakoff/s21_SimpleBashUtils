@@ -12,7 +12,6 @@ void add_reg_from_file(arguments *arg, char *filepath) {
     FILE *f = fopen(filepath, "r");
     if (f == NULL) {
         if (!arg->s) perror(filepath);
-        exit(1);
     }
     char *line = NULL;
     size_t memlen = 0;
@@ -51,43 +50,45 @@ arguments arguments_parser(int argc, char *argv[]) {
     while ((opt = getopt(argc, argv, "e:ivclnhsf:o")) != -1) {
         switch (opt) {
             case 'e':
-                arg.e = 1;
+                arg.e = true;
                 pattern_add(&arg, optarg);
                 break;
             case 'i':
-                arg.i = REG_ICASE;
+                arg.i = true;
                 break;
             case 'v':
-                arg.v = 1;
+                arg.v = true;
                 break;
             case 'c':
-                arg.c = 1;
+                arg.c = true;
                 break;
             case 'l':
-                arg.l = 1;
+                arg.l = true;
                 break;
             case 'n':
-                arg.n = 1;
+                arg.n = true;
                 break;
             case 'h':
-                arg.h = 1;
+                arg.h = true;
                 break;
             case 's':
-                arg.s = 1;
+                arg.s = true;
                 break;
             case 'f':
-                arg.f = 1;
+                arg.f = true;
                 add_reg_from_file(&arg, optarg);
                 break;
             case 'o':
-                arg.o = 1;
+                arg.o = true;
                 break;
         }
     }
     if (arg.len_pattern == 0) {
         pattern_add(&arg, argv[optind++]);
     }
-    if (argc - optind == 1) arg.h = 1;
+    if (argc - optind == 1) {
+        arg.h = true;
+    }
     return arg;
 }
 
@@ -95,14 +96,15 @@ void output_line(char *line, int n) {
     for (int i = 0; i < n; i++) {
         putchar(line[i]);
     }
-    if (line[n - 1] != '\n') putchar('\n');
+    if (line[n - 1] != '\n') {
+        putchar('\n');
+    }
 }
 
 void process_file(arguments arg, char *path, regex_t *reg) {
     FILE *f = fopen(path, "r");
     if (f == NULL) {
         if (!arg.s) perror(path);
-        exit(1);
     }
     char *line = NULL;
     size_t memlen;
@@ -114,7 +116,7 @@ void process_file(arguments arg, char *path, regex_t *reg) {
         int result = regexec(reg, line, 0, NULL, 0);
         if ((result == 0 && !arg.v) || (result == 1 && arg.v)) {
             if (!arg.c && !arg.l) {
-                if (arg.h == 0) printf("%s:", path);
+                if (!arg.h) printf("%s:", path);
                 if (arg.n) printf("%d:", line_count);
                 if (arg.o) {
                     print_match(reg, line, arg.v);
@@ -126,7 +128,7 @@ void process_file(arguments arg, char *path, regex_t *reg) {
         line_count++;
     }
     if (arg.c) {
-        if (arg.h == 0) printf("%s:", path);
+        if (!arg.h) printf("%s:", path);
         if (arg.l)
             printf("1\n");
         else
@@ -141,7 +143,8 @@ void process_file(arguments arg, char *path, regex_t *reg) {
 
 void output(arguments arg, int argc, char **argv) {
     regex_t reg;
-    int error = regcomp(&reg, arg.pattern, arg.i | REG_EXTENDED);
+    int error =
+            regcomp(&reg, arg.pattern, (arg.i ? REG_ICASE : 0) | REG_EXTENDED);
     if (error) perror("error");
     for (int i = optind; i < argc; i++) {
         process_file(arg, argv[i], &reg);
